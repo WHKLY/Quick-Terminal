@@ -2,10 +2,9 @@
 #include "autostart.h"
 #include "config.h"
 #include "notifications.h"
+#include "qt_strsafe.h"
 #include "resource.h"
 #include "terminal.h"
-
-#include <strsafe.h>
 
 static HICON LoadSizedAppIcon(int width, int height)
 {

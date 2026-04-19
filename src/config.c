@@ -1,8 +1,8 @@
 #include "config.h"
 #include "hotkey.h"
+#include "qt_strsafe.h"
 
 #include <shlobj.h>
-#include <strsafe.h>
 
 static wchar_t g_config_directory_path[32768];
 static wchar_t g_config_file_path[32768];

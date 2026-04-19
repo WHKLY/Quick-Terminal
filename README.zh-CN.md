@@ -33,6 +33,8 @@ src/autostart.c
 src/autostart.h
 src/notifications.c
 src/notifications.h
+src/strsafe_compat.c
+src/qt_strsafe.h
 src/tray.c
 src/tray.h
 src/hotkey.c
@@ -51,7 +53,7 @@ assets/icons/quick-terminal.ico
 ```powershell
 New-Item -ItemType Directory -Force build | Out-Null
 windres resources\quick-terminal.rc -O coff -o build\quick-terminal-res.o
-gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c src/app.c src/config.c src/autostart.c src/notifications.c src/tray.c src/hotkey.c src/terminal.c build\quick-terminal-res.o -o build\quick-terminal.exe -lshell32 -lole32 -luuid -lcrypt32
+gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c src/app.c src/config.c src/autostart.c src/notifications.c src/tray.c src/hotkey.c src/terminal.c src/strsafe_compat.c build\quick-terminal-res.o -o build\quick-terminal.exe -lshell32 -lole32 -luuid -lcrypt32
 ```
 
 ## 启动方式

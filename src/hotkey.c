@@ -1,7 +1,7 @@
 #include "hotkey.h"
+#include "qt_strsafe.h"
 
 #include <stdlib.h>
-#include <strsafe.h>
 
 BOOL ParseHotkeyModifiersString(const wchar_t *value, UINT *modifiers)
 {

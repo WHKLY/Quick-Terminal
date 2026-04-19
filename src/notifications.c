@@ -1,11 +1,11 @@
 #include "notifications.h"
+#include "qt_strsafe.h"
 #include "tray.h"
 
 #include <propkey.h>
 #include <propsys.h>
 #include <shlobj.h>
 #include <shobjidl.h>
-#include <strsafe.h>
 #include <wincrypt.h>
 
 #ifndef CRYPT_STRING_NOCRLF

@@ -3,11 +3,11 @@
 #include "config.h"
 #include "hotkey.h"
 #include "notifications.h"
+#include "qt_strsafe.h"
 #include "terminal.h"
 #include "tray.h"
 
 #include <stdlib.h>
-#include <strsafe.h>
 
 AppState g_app;
 AppConfig g_config;

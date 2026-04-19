@@ -1,7 +1,6 @@
 #include "autostart.h"
 #include "notifications.h"
-
-#include <strsafe.h>
+#include "qt_strsafe.h"
 
 static BOOL BuildExecutableCommandLine(wchar_t *buffer, size_t buffer_count, BOOL include_startup_notify)
 {
