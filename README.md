@@ -120,6 +120,7 @@ Recommended approach:
 - Use the current user scope only
 - Avoid requiring administrator privileges
 - Keep the executable path configurable or discoverable at runtime
+- Store app behavior preferences in `%APPDATA%\QuickTerminal\config.ini`
 
 Why this route is preferred:
 
@@ -161,6 +162,63 @@ Notes:
 - `--test-notification` is intended for validating the modern notification path without signing out and back in
 - Running the program without arguments still starts the background hotkey listener
 
+## Configuration File
+
+The app now uses a configuration file for app-level behavior preferences:
+
+```text
+%APPDATA%\QuickTerminal\config.ini
+```
+
+Current config-owned settings:
+
+- `show_tray`
+- `show_startup_notification`
+- `terminal.command`
+- `terminal.arguments`
+- `hotkey.modifiers`
+- `hotkey.key`
+
+Example:
+
+```ini
+[general]
+show_tray=true
+show_startup_notification=true
+
+[terminal]
+command=wt.exe
+arguments=new-tab powershell.exe
+
+[hotkey]
+modifiers=Ctrl+Alt
+key=T
+```
+
+Notes:
+
+- The config file is created automatically on first run
+- Existing tray visibility data can be migrated from the older registry-based setting
+- The Windows auto-start entry remains in the registry because it is a Windows integration concern, not an app preference
+- The app remembers a custom config directory location through a small registry-backed locator value
+- Hotkey and terminal-launch behavior are now also driven by the config file
+
+## Config Directory Selection
+
+The app supports choosing a different config directory when needed:
+
+```powershell
+.\build\quick-terminal.exe --config-dir "C:\Path\To\QuickTerminalConfig"
+.\build\quick-terminal.exe --config-dir-name QuickTerminalCustom
+```
+
+Notes:
+
+- `--config-dir` uses an explicit directory path
+- `--config-dir-name` creates or uses `%APPDATA%\<name>`
+- When a custom config directory is chosen successfully, the app remembers it for future launches
+- If the target directory already exists, is not empty, and does not contain a Quick Terminal config file, the app stops and asks you to choose a different config directory
+
 ## Tray Visibility Commands
 
 The current implementation supports these tray visibility commands:
@@ -178,6 +236,7 @@ Notes:
 - If an instance is already running, the app will try to apply the tray visibility change immediately
 - `--tray-status` reports whether tray icon display is currently enabled
 - Hiding the tray does not stop the hotkey listener; it only removes the tray icon and tray menu UI
+- Tray visibility is now persisted in the config file instead of the older registry-backed preference
 
 ## Manual Build Reference
 
@@ -192,6 +251,44 @@ gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c build\quick-terminal-res
 ```
 
 I have not run this command yet.
+
+## Hotkey And Terminal Config
+
+The current config file can control both the global hotkey and the terminal launch command.
+
+Supported hotkey modifier tokens:
+
+- `Ctrl`
+- `Alt`
+- `Shift`
+- `Win`
+
+Supported hotkey key examples:
+
+- `T`
+- `1`
+- `F1`
+- `F12`
+- `Tab`
+- `Enter`
+- `Escape`
+- `Space`
+- `Up`
+- `Down`
+- `Left`
+- `Right`
+
+Example:
+
+```ini
+[terminal]
+command=wt.exe
+arguments=new-tab powershell.exe
+
+[hotkey]
+modifiers=Ctrl+Alt
+key=T
+```
 
 ## Auto-Start Debugging
 
@@ -289,6 +386,78 @@ Toast implementation notes:
 - Status checks now also prefer non-blocking notifications, with detailed modal fallback where needed
 - Blocking errors still use classic modal prompts
 
+## Config Debugging
+
+Recommended local debug flow:
+
+1. Launch the app once so the config file is created
+2. Open:
+
+```text
+%APPDATA%\QuickTerminal\config.ini
+```
+
+3. Confirm the file contains:
+
+```ini
+[general]
+show_tray=true
+show_startup_notification=true
+```
+
+4. Run:
+
+```powershell
+.\build\quick-terminal.exe --hide-tray
+```
+
+5. Confirm `show_tray=false` is written into the config file
+6. Run:
+
+```powershell
+.\build\quick-terminal.exe --show-tray
+```
+
+7. Confirm `show_tray=true` is written back into the config file
+8. Sign out and sign back in, or restart the app, and confirm the stored behavior is preserved
+
+Custom config-directory validation:
+
+1. Run:
+
+```powershell
+.\build\quick-terminal.exe --config-dir-name QuickTerminalTest
+```
+
+2. Confirm a new directory is created under `%APPDATA%`
+3. Confirm `config.ini` is created in that directory
+4. Launch the app again without `--config-dir-name`
+5. Confirm the app continues using the remembered config directory
+
+Hotkey and terminal-command validation:
+
+1. Open `config.ini`
+2. Change:
+
+```ini
+[hotkey]
+modifiers=Ctrl+Shift
+key=Y
+```
+
+3. Restart the app
+4. Confirm `Ctrl+Shift+Y` works and the old hotkey no longer does
+5. Change:
+
+```ini
+[terminal]
+command=wt.exe
+arguments=new-tab powershell.exe
+```
+
+6. Restart the app
+7. Confirm the configured command is used when the hotkey is triggered
+
 ## Notification Debugging
 
 Recommended local debug flow:
@@ -376,6 +545,9 @@ Tray visibility validation:
 - `--test-notification` can validate the modern notification path on demand
 - Enabling and disabling auto-start and tray visibility should prefer non-blocking notifications over modal confirmations
 - Status checks for auto-start and tray visibility should also prefer non-blocking notifications when available
+- The config file should be created automatically and persist tray/startup-notification preferences
+- The app should be able to remember a custom config directory and reject conflicting non-empty directories without a valid config file
+- The app should load the configured hotkey and terminal command from `config.ini`
 
 ## Next Steps
 
