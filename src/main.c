@@ -2,6 +2,8 @@
 #include <shellapi.h>
 #include <strsafe.h>
 
+#include "resource.h"
+
 #ifndef MOD_NOREPEAT
 #define MOD_NOREPEAT 0x4000
 #endif
@@ -46,6 +48,8 @@ typedef struct AppStateTag
     HANDLE mutex;
     HWND window;
     NOTIFYICONDATAW tray_icon;
+    HICON large_icon;
+    HICON small_icon;
     BOOL tray_icon_added;
     BOOL tray_enabled;
     BOOL show_startup_notification;
@@ -81,6 +85,54 @@ static void ShowInfoMessage(const wchar_t *message)
 static void ShowErrorMessage(const wchar_t *message)
 {
     MessageBoxW(NULL, message, kAppTitle, MB_OK | MB_ICONERROR);
+}
+
+static HICON LoadSizedAppIcon(int width, int height)
+{
+    HICON icon = (HICON)LoadImageW(
+        g_app.instance,
+        MAKEINTRESOURCEW(IDI_APP_ICON),
+        IMAGE_ICON,
+        width,
+        height,
+        LR_DEFAULTCOLOR);
+
+    if (icon == NULL)
+    {
+        icon = LoadIconW(NULL, IDI_APPLICATION);
+    }
+
+    return icon;
+}
+
+static BOOL InitializeAppIcons(void)
+{
+    g_app.large_icon = LoadSizedAppIcon(
+        GetSystemMetrics(SM_CXICON),
+        GetSystemMetrics(SM_CYICON));
+    g_app.small_icon = LoadSizedAppIcon(
+        GetSystemMetrics(SM_CXSMICON),
+        GetSystemMetrics(SM_CYSMICON));
+
+    return (g_app.large_icon != NULL && g_app.small_icon != NULL);
+}
+
+static void DestroyAppIcons(void)
+{
+    if (g_app.large_icon != NULL && g_app.large_icon != LoadIconW(NULL, IDI_APPLICATION))
+    {
+        DestroyIcon(g_app.large_icon);
+    }
+
+    if (g_app.small_icon != NULL &&
+        g_app.small_icon != g_app.large_icon &&
+        g_app.small_icon != LoadIconW(NULL, IDI_APPLICATION))
+    {
+        DestroyIcon(g_app.small_icon);
+    }
+
+    g_app.large_icon = NULL;
+    g_app.small_icon = NULL;
 }
 
 static BOOL BuildExecutableCommandLine(wchar_t *buffer, size_t buffer_count, BOOL include_startup_notify)
@@ -593,7 +645,7 @@ static BOOL InitializeTrayIcon(HWND window)
     g_app.tray_icon.uID = 1;
     g_app.tray_icon.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     g_app.tray_icon.uCallbackMessage = WMAPP_TRAYICON;
-    g_app.tray_icon.hIcon = LoadIconW(NULL, IDI_APPLICATION);
+    g_app.tray_icon.hIcon = g_app.small_icon;
 
     if (FAILED(StringCchCopyW(
             g_app.tray_icon.szTip,
@@ -770,7 +822,8 @@ static BOOL RegisterMainWindowClass(HINSTANCE instance)
     window_class.cbSize = sizeof(window_class);
     window_class.lpfnWndProc = WindowProc;
     window_class.hInstance = instance;
-    window_class.hIcon = LoadIconW(NULL, IDI_APPLICATION);
+    window_class.hIcon = g_app.large_icon;
+    window_class.hIconSm = g_app.small_icon;
     window_class.hCursor = LoadCursorW(NULL, IDC_ARROW);
     window_class.lpszClassName = kWindowClassName;
 
@@ -862,8 +915,17 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command_line, 
         return 0;
     }
 
+    if (!InitializeAppIcons())
+    {
+        ShowErrorMessage(L"Failed to load the application icon resources.");
+        CloseHandle(g_app.mutex);
+        g_app.mutex = NULL;
+        return 1;
+    }
+
     if (!InitializeApplicationWindow(instance))
     {
+        DestroyAppIcons();
         CloseHandle(g_app.mutex);
         g_app.mutex = NULL;
         return 1;
@@ -873,6 +935,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command_line, 
     {
         ShowErrorMessage(L"Failed to register Ctrl+Alt+T. The hotkey may already be in use.");
         DestroyWindow(g_app.window);
+        DestroyAppIcons();
         CloseHandle(g_app.mutex);
         g_app.mutex = NULL;
         return 1;
@@ -883,6 +946,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command_line, 
         ShowErrorMessage(L"Failed to read the tray visibility setting.");
         UnregisterHotKey(g_app.window, HOTKEY_ID);
         DestroyWindow(g_app.window);
+        DestroyAppIcons();
         CloseHandle(g_app.mutex);
         g_app.mutex = NULL;
         return 1;
@@ -893,6 +957,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command_line, 
         ShowErrorMessage(L"Failed to create the system tray icon.");
         UnregisterHotKey(g_app.window, HOTKEY_ID);
         DestroyWindow(g_app.window);
+        DestroyAppIcons();
         CloseHandle(g_app.mutex);
         g_app.mutex = NULL;
         return 1;
@@ -912,6 +977,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command_line, 
         CloseHandle(g_app.mutex);
         g_app.mutex = NULL;
     }
+
+    DestroyAppIcons();
 
     return exit_code;
 }

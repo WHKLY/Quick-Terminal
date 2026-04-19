@@ -1,0 +1,6 @@
+#ifndef QUICK_TERMINAL_RESOURCE_H
+#define QUICK_TERMINAL_RESOURCE_H
+
+#define IDI_APP_ICON 101
+
+#endif

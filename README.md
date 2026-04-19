@@ -33,6 +33,9 @@ wt.exe new-tab powershell.exe
 
 ```text
 src/main.c
+src/resource.h
+resources/quick-terminal.rc
+assets/icons/quick-terminal.ico
 ```
 
 ## Runtime Behavior
@@ -63,6 +66,7 @@ The current version includes:
 - Terminal launch via `ShellExecuteW`
 - A single-instance guard using a named mutex
 - A system tray icon via `Shell_NotifyIcon`
+- A shared `.ico` resource used for the tray icon, window icon, and executable icon
 - Tray menu actions for launch, status, auto-start toggle, and exit
 - Optional startup balloon notification
 - Persistent tray visibility settings controlled by command-line switches
@@ -142,7 +146,8 @@ One expected `gcc` command for MinGW-style environments is:
 
 ```powershell
 New-Item -ItemType Directory -Force build | Out-Null
-gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c -o build\quick-terminal.exe -lshell32
+windres resources\quick-terminal.rc -O coff -o build\quick-terminal-res.o
+gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c build\quick-terminal-res.o -o build\quick-terminal.exe -lshell32
 ```
 
 I have not run this command yet.
@@ -204,9 +209,10 @@ Stop-Process -Name quick-terminal -Force
 ```
 
 4. Confirm a tray icon appears in the Windows notification area
-5. Double-click the tray icon and verify Windows Terminal opens
-6. Right-click the tray icon and verify the menu items behave as expected
-7. Choose `Exit` from the tray menu and confirm the process terminates
+5. Confirm the tray icon uses the project icon instead of the default application icon
+6. Double-click the tray icon and verify Windows Terminal opens
+7. Right-click the tray icon and verify the menu items behave as expected
+8. Choose `Exit` from the tray menu and confirm the process terminates
 
 Startup balloon validation:
 
