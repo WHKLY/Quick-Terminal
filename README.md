@@ -33,6 +33,20 @@ wt.exe new-tab powershell.exe
 
 ```text
 src/main.c
+src/app.c
+src/app.h
+src/config.c
+src/config.h
+src/autostart.c
+src/autostart.h
+src/notifications.c
+src/notifications.h
+src/tray.c
+src/tray.h
+src/hotkey.c
+src/hotkey.h
+src/terminal.c
+src/terminal.h
 src/resource.h
 resources/quick-terminal.rc
 assets/icons/quick-terminal.ico
@@ -247,7 +261,7 @@ One expected `gcc` command for MinGW-style environments is:
 ```powershell
 New-Item -ItemType Directory -Force build | Out-Null
 windres resources\quick-terminal.rc -O coff -o build\quick-terminal-res.o
-gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c build\quick-terminal-res.o -o build\quick-terminal.exe -lshell32 -lole32 -luuid -lcrypt32
+gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c src/app.c src/config.c src/autostart.c src/notifications.c src/tray.c src/hotkey.c src/terminal.c build\quick-terminal-res.o -o build\quick-terminal.exe -lshell32 -lole32 -luuid -lcrypt32
 ```
 
 I have not run this command yet.
