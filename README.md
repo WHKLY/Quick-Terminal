@@ -1,54 +1,41 @@
 # Quick Terminal
 
-[中文指南](README.zh-CN.md)
+[中文指南](README.zh-CN.md) · [Project Notes](PROJECT.md)
 
-Quick Terminal is a lightweight Windows utility that lets you press a global hotkey to open Windows Terminal and start PowerShell.
+Quick Terminal is a lightweight Windows tray utility that opens Windows Terminal with a global hotkey.
 
 ## Features
 
 - Global hotkey support, defaulting to `Ctrl+Alt+T`
-- Launches Windows Terminal and opens PowerShell in a new tab
-- Runs as a single background instance with a tray icon
-- User-level auto-start support through the Windows Run key
-- Toast-first notifications with tray and dialog fallbacks
-- Persistent settings stored in `%APPDATA%\QuickTerminal\config.ini`
-- Configurable tray visibility, hotkey, terminal launch mode, terminal command, and config directory
+- Opens Windows Terminal, optionally with a PowerShell tab
+- Tray icon and tray menu controls
+- User-level auto-start support
+- Toast-first notifications with fallback behavior
+- Persistent config file support
 
-## Requirements
+## Get Started
 
-- Windows 10 or Windows 11
-- Windows Terminal installed and available as `wt.exe`
-- A MinGW-style `gcc` toolchain if you want to build from source
-- `windres` for compiling the Windows resource file
+### Option 1: Download a release
 
-## Project Layout
+1. Open the repository's `Releases` page on GitHub
+2. Download `quick-terminal-v0.1.1.exe`
+3. Run it directly on Windows
 
-```text
-src/main.c
-src/app.c
-src/app.h
-src/config.c
-src/config.h
-src/autostart.c
-src/autostart.h
-src/notifications.c
-src/notifications.h
-src/strsafe_compat.c
-src/qt_strsafe.h
-src/tray.c
-src/tray.h
-src/hotkey.c
-src/hotkey.h
-src/terminal.c
-src/terminal.h
-src/resource.h
-resources/quick-terminal.rc
-assets/icons/quick-terminal.ico
+If you use the release asset directly, example commands look like:
+
+```powershell
+.\quick-terminal-v0.1.1.exe
+.\quick-terminal-v0.1.1.exe --set-terminal-mode terminal-only
 ```
 
-## Build
+### Option 2: Clone and build from source
 
-Run the following commands from the repository root:
+```bash
+git clone https://github.com/WHKLY/Quick-Terminal.git
+cd Quick-Terminal
+```
+
+Build from the repository root:
 
 ```powershell
 New-Item -ItemType Directory -Force build | Out-Null
@@ -58,7 +45,7 @@ gcc -municode -mwindows -g -O0 -Wall -Wextra src/main.c src/app.c src/config.c s
 
 ## Run
 
-Run without arguments to start the background hotkey listener:
+Start the background hotkey listener:
 
 ```powershell
 .\build\quick-terminal.exe
@@ -68,10 +55,11 @@ Default behavior:
 
 - The app stays in the background
 - A tray icon appears unless disabled in config
-- Pressing `Ctrl+Alt+T` opens Windows Terminal
-- PowerShell opens in a new tab
+- Press `Ctrl+Alt+T` to launch Windows Terminal
 
 ## Commands
+
+If you built from source, use:
 
 ```powershell
 .\build\quick-terminal.exe --enable-autostart
@@ -90,13 +78,13 @@ Default behavior:
 
 ## Configuration
 
-Quick Terminal stores app settings in:
+Config file location:
 
 ```text
 %APPDATA%\QuickTerminal\config.ini
 ```
 
-Example:
+Default config example:
 
 ```ini
 [general]
@@ -113,28 +101,6 @@ modifiers=Ctrl+Alt
 key=T
 ```
 
-Supported hotkey modifier tokens:
-
-- `Ctrl`
-- `Alt`
-- `Shift`
-- `Win`
-
-Supported hotkey key examples:
-
-- `T`
-- `1`
-- `F1`
-- `F12`
-- `Tab`
-- `Enter`
-- `Escape`
-- `Space`
-- `Up`
-- `Down`
-- `Left`
-- `Right`
-
 Supported terminal modes:
 
 - `terminal-only`
@@ -145,49 +111,19 @@ Mode behavior:
 - `terminal-only` launches Windows Terminal only
 - `terminal-with-powershell` launches Windows Terminal and opens PowerShell in a new tab
 
-You can also switch the mode from the terminal:
+Notes:
 
-```powershell
-.\build\quick-terminal.exe --set-terminal-mode terminal-only
-.\build\quick-terminal.exe --set-terminal-mode terminal-with-powershell
-```
-
-## Auto-Start
-
-Auto-start is managed through:
-
-```text
-HKCU\Software\Microsoft\Windows\CurrentVersion\Run
-```
-
-This keeps setup user-scoped and does not require administrator privileges.
-
-## Notifications
-
-Quick Terminal prefers modern Windows toast notifications for lightweight confirmations and status messages. If toast delivery is unavailable, it falls back to the tray notification path or a classic dialog where appropriate.
-
-## Tray Behavior
-
-- Double-click the tray icon to open Windows Terminal
-- Right-click the tray icon to access the control menu
-- Use terminal commands to show or hide the tray persistently
-- Hiding the tray does not disable the hotkey listener
+- When `mode=terminal-only`, `arguments` are ignored
+- When `mode=terminal-with-powershell`, `command` and `arguments` are used together
 
 ## Troubleshooting
 
 - If rebuild fails with `Permission denied`, stop any running `quick-terminal.exe` process first
-- If the hotkey does not register, another application may already be using the same combination
-- If auto-start stops working, refresh it with `--enable-autostart`
-- If toast notifications do not appear, test with `--test-notification` and confirm the fallback behavior still works
+- If the hotkey does not register, another app may already be using that combination
+- If launching PowerShell through Windows Terminal fails on a specific machine, switch to `terminal-only`
 - If `wt.exe` is unavailable, update the `[terminal]` section in `config.ini`
+- If toast notifications do not appear, test with `--test-notification`
 
-## Validation Checklist
+## License
 
-- The app starts successfully
-- The configured hotkey works globally
-- Windows Terminal opens and PowerShell starts in a new tab
-- Launching the app a second time does not create a competing instance
-- Tray controls work as expected
-- Auto-start can be enabled and disabled
-- Notifications appear or fall back cleanly
-- Config changes persist across restarts
+MIT. See [LICENSE](LICENSE).
