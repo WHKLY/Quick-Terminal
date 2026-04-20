@@ -3,6 +3,10 @@
 
 #include "app.h"
 
+BOOL IsSupportedTerminalMode(const wchar_t *mode);
+BOOL IsTerminalOnlyMode(void);
 BOOL LaunchWindowsTerminal(void);
+void ShowTerminalLaunchError(void);
+BOOL SetTerminalMode(const wchar_t *mode);
 
 #endif

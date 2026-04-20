@@ -12,7 +12,7 @@ Quick Terminal is a lightweight Windows utility that lets you press a global hot
 - User-level auto-start support through the Windows Run key
 - Toast-first notifications with tray and dialog fallbacks
 - Persistent settings stored in `%APPDATA%\QuickTerminal\config.ini`
-- Configurable tray visibility, hotkey, terminal command, and config directory
+- Configurable tray visibility, hotkey, terminal launch mode, terminal command, and config directory
 
 ## Requirements
 
@@ -80,6 +80,8 @@ Default behavior:
 .\build\quick-terminal.exe --show-tray
 .\build\quick-terminal.exe --hide-tray
 .\build\quick-terminal.exe --tray-status
+.\build\quick-terminal.exe --set-terminal-mode terminal-only
+.\build\quick-terminal.exe --set-terminal-mode terminal-with-powershell
 .\build\quick-terminal.exe --test-notification
 .\build\quick-terminal.exe --config-dir "C:\Path\To\ConfigDir"
 .\build\quick-terminal.exe --config-dir-name QuickTerminalCustom
@@ -102,6 +104,7 @@ show_tray=true
 show_startup_notification=true
 
 [terminal]
+mode=terminal-with-powershell
 command=wt.exe
 arguments=new-tab powershell.exe
 
@@ -131,6 +134,23 @@ Supported hotkey key examples:
 - `Down`
 - `Left`
 - `Right`
+
+Supported terminal modes:
+
+- `terminal-only`
+- `terminal-with-powershell`
+
+Mode behavior:
+
+- `terminal-only` launches Windows Terminal only
+- `terminal-with-powershell` launches Windows Terminal and opens PowerShell in a new tab
+
+You can also switch the mode from the terminal:
+
+```powershell
+.\build\quick-terminal.exe --set-terminal-mode terminal-only
+.\build\quick-terminal.exe --set-terminal-mode terminal-with-powershell
+```
 
 ## Auto-Start
 

@@ -280,7 +280,7 @@ void HandleTrayCommand(HWND window, UINT command_id)
     case ID_TRAY_OPEN_TERMINAL:
         if (!LaunchWindowsTerminal())
         {
-            ShowErrorMessage(L"Failed to launch Windows Terminal with PowerShell.");
+            ShowTerminalLaunchError();
         }
         break;
 

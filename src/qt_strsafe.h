@@ -3,7 +3,7 @@
 
 #ifdef QUICK_TERMINAL_STRSAFE_IMPLEMENTATION
 #define __CRT_STRSAFE_IMPL
-#else
+#elif !defined(__CRT__NO_INLINE)
 #define __CRT__NO_INLINE
 #endif
 

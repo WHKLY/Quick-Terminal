@@ -34,6 +34,7 @@ typedef enum
     COMMAND_SHOW_TRAY,
     COMMAND_HIDE_TRAY,
     COMMAND_TRAY_STATUS,
+    COMMAND_SET_TERMINAL_MODE,
     COMMAND_TEST_NOTIFICATION,
     COMMAND_HELP
 } CommandMode;
@@ -45,12 +46,14 @@ typedef struct AppOptionsTag
     BOOL has_custom_config_directory;
     BOOL persist_custom_config_directory;
     wchar_t custom_config_directory[32768];
+    wchar_t requested_terminal_mode[64];
 } AppOptions;
 
 typedef struct AppConfigTag
 {
     BOOL show_tray;
     BOOL show_startup_notification;
+    wchar_t terminal_mode[64];
     wchar_t terminal_command[512];
     wchar_t terminal_arguments[2048];
     wchar_t hotkey_modifiers[64];
@@ -79,6 +82,7 @@ extern const wchar_t *kWindowClassName;
 extern const wchar_t *kMutexName;
 extern const wchar_t *kDefaultTerminalCommand;
 extern const wchar_t *kDefaultTerminalArguments;
+extern const wchar_t *kDefaultTerminalMode;
 extern const wchar_t *kDefaultHotkeyModifiers;
 extern const wchar_t *kDefaultHotkeyKey;
 extern const wchar_t *kRunKeyPath;

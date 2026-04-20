@@ -1,6 +1,7 @@
 #include "config.h"
 #include "hotkey.h"
 #include "qt_strsafe.h"
+#include "terminal.h"
 
 #include <shlobj.h>
 
@@ -68,6 +69,7 @@ void SetDefaultConfig(AppConfig *config)
 
     config->show_tray = TRUE;
     config->show_startup_notification = TRUE;
+    CopyConfigString(config->terminal_mode, sizeof(config->terminal_mode) / sizeof(config->terminal_mode[0]), kDefaultTerminalMode);
     CopyConfigString(config->terminal_command, sizeof(config->terminal_command) / sizeof(config->terminal_command[0]), kDefaultTerminalCommand);
     CopyConfigString(config->terminal_arguments, sizeof(config->terminal_arguments) / sizeof(config->terminal_arguments[0]), kDefaultTerminalArguments);
     CopyConfigString(config->hotkey_modifiers, sizeof(config->hotkey_modifiers) / sizeof(config->hotkey_modifiers[0]), kDefaultHotkeyModifiers);
@@ -441,6 +443,15 @@ BOOL SaveConfig(const AppConfig *config)
 
     if (!WritePrivateProfileStringW(
             L"terminal",
+            L"mode",
+            config->terminal_mode,
+            g_config_file_path))
+    {
+        return FALSE;
+    }
+
+    if (!WritePrivateProfileStringW(
+            L"terminal",
             L"command",
             config->terminal_command,
             g_config_file_path))
@@ -570,6 +581,19 @@ BOOL LoadConfig(AppConfig *config)
 
     if (!ReadIniStringWithDefault(
             L"terminal",
+            L"mode",
+            config->terminal_mode,
+            config->terminal_mode,
+            sizeof(config->terminal_mode) / sizeof(config->terminal_mode[0]),
+            g_config_file_path,
+            &was_missing))
+    {
+        return FALSE;
+    }
+    config_needs_save = (config_needs_save || was_missing);
+
+    if (!ReadIniStringWithDefault(
+            L"terminal",
             L"command",
             config->terminal_command,
             config->terminal_command,
@@ -641,6 +665,12 @@ BOOL ValidateConfig(const AppConfig *config)
     if (config->terminal_command[0] == L'\0')
     {
         ShowErrorMessage(L"The terminal command in config.ini cannot be empty.");
+        return FALSE;
+    }
+
+    if (!IsSupportedTerminalMode(config->terminal_mode))
+    {
+        ShowErrorMessage(L"The terminal mode in config.ini is invalid. Use terminal-only or terminal-with-powershell.");
         return FALSE;
     }
 

@@ -18,6 +18,7 @@ const wchar_t *kWindowClassName = L"QuickTerminalHiddenWindow";
 const wchar_t *kMutexName = L"QuickTerminalHotkeySingleton";
 const wchar_t *kDefaultTerminalCommand = L"wt.exe";
 const wchar_t *kDefaultTerminalArguments = L"new-tab powershell.exe";
+const wchar_t *kDefaultTerminalMode = L"terminal-with-powershell";
 const wchar_t *kDefaultHotkeyModifiers = L"Ctrl+Alt";
 const wchar_t *kDefaultHotkeyKey = L"T";
 const wchar_t *kRunKeyPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -38,6 +39,7 @@ const wchar_t *kUsageText =
     L"--show-tray\n"
     L"--hide-tray\n"
     L"--tray-status\n"
+    L"--set-terminal-mode <terminal-only|terminal-with-powershell>\n"
     L"--test-notification\n"
     L"--config-dir <path>\n"
     L"--config-dir-name <name>\n"
@@ -137,6 +139,7 @@ static BOOL ParseCommandLine(AppOptions *options)
     options->has_custom_config_directory = FALSE;
     options->persist_custom_config_directory = FALSE;
     options->custom_config_directory[0] = L'\0';
+    options->requested_terminal_mode[0] = L'\0';
 
     argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     if (argv == NULL)
@@ -174,6 +177,21 @@ static BOOL ParseCommandLine(AppOptions *options)
         else if (lstrcmpiW(argv[i], L"--tray-status") == 0)
         {
             options->command_mode = COMMAND_TRAY_STATUS;
+        }
+        else if (lstrcmpiW(argv[i], L"--set-terminal-mode") == 0)
+        {
+            if (i + 1 >= argc ||
+                FAILED(StringCchCopyW(
+                    options->requested_terminal_mode,
+                    sizeof(options->requested_terminal_mode) / sizeof(options->requested_terminal_mode[0]),
+                    argv[++i])))
+            {
+                LocalFree(argv);
+                ShowErrorMessage(L"Missing or invalid value for --set-terminal-mode.");
+                return FALSE;
+            }
+
+            options->command_mode = COMMAND_SET_TERMINAL_MODE;
         }
         else if (lstrcmpiW(argv[i], L"--test-notification") == 0)
         {
@@ -254,6 +272,9 @@ static int HandleManagementCommand(const AppOptions *options)
     case COMMAND_TRAY_STATUS:
         return ShowTraySettingStatus() ? 0 : 1;
 
+    case COMMAND_SET_TERMINAL_MODE:
+        return SetTerminalMode(options->requested_terminal_mode) ? 0 : 1;
+
     case COMMAND_TEST_NOTIFICATION:
         return TestModernNotification() ? 0 : 1;
 
@@ -278,7 +299,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM w_param, LP
     case WM_HOTKEY:
         if (w_param == HOTKEY_ID && !LaunchWindowsTerminal())
         {
-            ShowErrorMessage(L"Failed to launch Windows Terminal with PowerShell.");
+            ShowTerminalLaunchError();
         }
         return 0;
 
@@ -292,7 +313,7 @@ static LRESULT CALLBACK WindowProc(HWND window, UINT message, WPARAM w_param, LP
         case WM_LBUTTONDBLCLK:
             if (!LaunchWindowsTerminal())
             {
-                ShowErrorMessage(L"Failed to launch Windows Terminal with PowerShell.");
+                ShowTerminalLaunchError();
             }
             return 0;
 
