@@ -8,6 +8,7 @@ Quick Terminal 是一个轻量级 Windows 托盘工具，可以通过全局快�
 
 - 支持全局快捷键，默认是 `Ctrl+Alt+T`
 - 可选择只启动 Windows Terminal，或通过 Terminal 打开 PowerShell 标签页
+- 在 PowerShell 模式下，可自动恢复上一个终端退出时所在的目录
 - 支持托盘图标和托盘菜单
 - 支持当前用户级别的开机自启
 - 优先使用现代通知，失败时自动回退
@@ -109,12 +110,13 @@ key=T
 模式说明：
 
 - `terminal-only`：只启动 Windows Terminal
-- `terminal-with-powershell`：通过 Windows Terminal 打开 PowerShell 新标签页
+- `terminal-with-powershell`：通过 Windows Terminal 打开 PowerShell 新标签页，并恢复上一次保存的工作目录
 
 补充说明：
 
 - 当 `mode=terminal-only` 时，`arguments` 会被忽略
-- 当 `mode=terminal-with-powershell` 时，会组合使用 `command` 和 `arguments`
+- 当 `mode=terminal-with-powershell` 时，Quick Terminal 会接管 PowerShell 的启动流程，以便恢复并保存工作目录
+- 上一次目录状态会写入 `%APPDATA%\QuickTerminal\last-directory.txt`
 
 ## 常见排查
 
@@ -123,6 +125,7 @@ key=T
 - 如果某些机器上通过 Terminal 打开 PowerShell 失败，可以切到 `terminal-only`
 - 如果 `wt.exe` 不可用，可以修改 `[terminal]` 配置
 - 如果通知没有弹出，可以先执行 `--test-notification`
+- 如果保存的上一次目录已经不存在，Quick Terminal 会退回到默认启动目录
 
 ## 许可证
 

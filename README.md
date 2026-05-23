@@ -8,6 +8,7 @@ Quick Terminal is a lightweight Windows tray utility that opens Windows Terminal
 
 - Global hotkey support, defaulting to `Ctrl+Alt+T`
 - Opens Windows Terminal, optionally with a PowerShell tab
+- In PowerShell mode, restores the previous terminal's last working directory
 - Tray icon and tray menu controls
 - User-level auto-start support
 - Toast-first notifications with fallback behavior
@@ -109,12 +110,13 @@ Supported terminal modes:
 Mode behavior:
 
 - `terminal-only` launches Windows Terminal only
-- `terminal-with-powershell` launches Windows Terminal and opens PowerShell in a new tab
+- `terminal-with-powershell` launches Windows Terminal, opens PowerShell in a new tab, and restores the last saved working directory
 
 Notes:
 
 - When `mode=terminal-only`, `arguments` are ignored
-- When `mode=terminal-with-powershell`, `command` and `arguments` are used together
+- When `mode=terminal-with-powershell`, Quick Terminal manages the PowerShell launch sequence so it can restore and persist the working directory
+- The last working directory is stored in `%APPDATA%\QuickTerminal\last-directory.txt`
 
 ## Troubleshooting
 
@@ -123,6 +125,7 @@ Notes:
 - If launching PowerShell through Windows Terminal fails on a specific machine, switch to `terminal-only`
 - If `wt.exe` is unavailable, update the `[terminal]` section in `config.ini`
 - If toast notifications do not appear, test with `--test-notification`
+- If the saved last directory no longer exists, Quick Terminal falls back to the default startup directory
 
 ## License
 

@@ -77,6 +77,8 @@ Quick Terminal may create or update the following items on a user's computer:
 
 - `%APPDATA%\QuickTerminal\config.ini`
   Stores app configuration
+- `%APPDATA%\QuickTerminal\last-directory.txt`
+  Stores the last working directory for PowerShell-mode launches
 - `%APPDATA%\QuickTerminal\`
   Config directory
 - `HKCU\Software\QuickTerminal`
